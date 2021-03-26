@@ -3,11 +3,14 @@ package com.nodeapp.demo.controllers;
 
 import com.nodeapp.demo.entity.Document;
 import com.nodeapp.demo.payload.DocumentDTO;
+import com.nodeapp.demo.payload.ResponseDTO;
 import com.nodeapp.demo.repository.DocumentRepository;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import org.dom4j.rule.Mode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,7 +21,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -38,12 +43,9 @@ public class UploadController {
     }
 
     @PostMapping("/upload")
-    @ResponseBody
-    public List uploadCSVFile(@RequestParam("file") MultipartFile file) {
+    public String uploadCSVFile(@RequestParam("file") MultipartFile file, Model model) {
 
-        List<StringBuilder> response = new ArrayList<>();
-
-
+        List<ResponseDTO> response = new ArrayList<>();
         try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
 
             CsvToBean csvToBean = new CsvToBeanBuilder(reader)
@@ -78,27 +80,32 @@ public class UploadController {
 
             }
             List<Object[]> result = documentRepository.getResult();
-            Long key = ((BigInteger) result.get(0)[0]).longValue();
 
-            StringBuilder res = new StringBuilder((String) result.get(0)[1] + " - " + (String) result.get(0)[2]);
-            result.remove(0);
+            Long key = ((BigInteger) result.get(0)[0]).longValue();
+            Boolean c = true; //
+            ResponseDTO dto = null;
+            String parentId = "";
             for (Object[] object : result) {
                 try {
-                    if (key.equals(((BigInteger) object[0]).longValue())) {
-                        res.append(" -------> ").append((String) object[1]).append(" - ").append((String) object[2]);
+                    if (c ) {
+                        dto = new ResponseDTO((String) object[1], (String) object[2], (Timestamp) object[3], null);
+                        c = false;
+                    } else if (key.equals(((BigInteger) object[0]).longValue())) {
+                        dto = new ResponseDTO((String) object[1], (String) object[2], (Timestamp) object[3], parentId);
                     } else {
                         key = ((BigInteger) object[0]).longValue();
-                        response.add(res);
-                        res = new StringBuilder((String) object[1] + " - " + (String) object[2]);
+                        dto = new ResponseDTO((String) object[1], (String) object[2], (Timestamp) object[3], null);
                     }
+                    parentId = (String) object[1];
+                    response.add(dto);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            response.add(res);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return response;
+        model.addAttribute("response",response);
+        return "success";
     }
 }
