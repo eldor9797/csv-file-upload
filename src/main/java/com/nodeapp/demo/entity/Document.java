@@ -1,17 +1,19 @@
 package com.nodeapp.demo.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "document")
 public class Document {
 
     @Id
-    private Long docId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "key")
+    private Long key;
 
     @Column(name = "name")
     private String name;
@@ -19,13 +21,17 @@ public class Document {
     @Column(name = "date")
     private Instant date;
 
+    @Column(name = "childs")
+    private String childlist;
+
     public Document() {
     }
 
-    public Document(Long id, String name, Instant date) {
-        this.docId = id;
+    public Document(Long key, String name, Instant date, String childlist) {
+        this.key = key;
         this.name = name;
         this.date = date;
+        this.childlist = childlist;
     }
 
     public Instant getDate() {
@@ -36,12 +42,20 @@ public class Document {
         this.date = date;
     }
 
-    public Long getDocId() {
-        return docId;
+    public Long getId() {
+        return id;
     }
 
-    public void setDocId(Long docId) {
-        this.docId = docId;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getKey() {
+        return key;
+    }
+
+    public void setKey(Long key) {
+        this.key = key;
     }
 
     public String getName() {
@@ -52,4 +66,11 @@ public class Document {
         this.name = name;
     }
 
+    public String getChildlist() {
+        return childlist;
+    }
+
+    public void setChildlist(String childlist) {
+        this.childlist = childlist;
+    }
 }
