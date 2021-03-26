@@ -43,8 +43,7 @@ public class UploadController {
     }
 
     @PostMapping("/upload")
-    @ResponseBody
-    public List<?> uploadCSVFile(@RequestParam("file") MultipartFile file, Model model) {
+    public String uploadCSVFile(@RequestParam("file") MultipartFile file, Model model) {
 
         if (file.isEmpty()) {
             model.addAttribute("message", "Please select a CSV file to upload.");
@@ -53,7 +52,7 @@ public class UploadController {
 
             try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
 
-                CsvToBean<DocumentDTO> csvToBean = new CsvToBeanBuilder(reader)
+                CsvToBean csvToBean = new CsvToBeanBuilder(reader)
                         .withType(DocumentDTO.class)
                         .withIgnoreLeadingWhiteSpace(true)
                         .build();
@@ -91,6 +90,6 @@ public class UploadController {
                 ex.printStackTrace();
             }
         }
-        return new ArrayList<>();
+       return "success";
     }
 }
